@@ -274,10 +274,17 @@ export default function Dashboard() {
   const deleteEntry = useMutation(api.outreach.deleteEntry);
 
   const reasonOptions = useMemo(() => {
-    const base = [...DEFAULT_REASONS, ...(customReasons ?? [])];
+    // Saved custom reasons (deduped against the built-in ones and "Other")
+    // become permanent dropdown options for all future entries.
+    const defaults = DEFAULT_REASONS as readonly string[];
+    const saved = (customReasons ?? []).filter(
+      (r) => !defaults.includes(r) && r !== OTHER_REASON,
+    );
+    const options = [...DEFAULT_REASONS, ...saved];
     const current = editing?.reason;
-    if (current && !base.includes(current)) return [...base, current];
-    return base;
+    if (current && !options.includes(current)) options.push(current);
+    options.push(OTHER_REASON);
+    return options;
   }, [customReasons, editing]);
 
   const handleSignOut = async () => {
